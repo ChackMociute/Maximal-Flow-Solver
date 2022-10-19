@@ -67,6 +67,10 @@ class MaximalFlow:
         A, B = self.get_minimal_cut()
         return sum([self.capacity[(a, b)] for a in A for b in B if (a, b) in set(self.capacity.keys())])
     
+    def get_edges_across_cut(self):
+        A, B = self.get_minimal_cut()
+        return [(a, b) for a in A for b in B if (a, b) in set(self.capacity.keys())]
+    
     # ------------------------DRAWING FIGURES------------------------
     def draw_figure(self, flow_title=None, residual_title=None, i=''):
         _, axs = plt.subplots(1, 2, figsize=self.FIG_SIZE)
