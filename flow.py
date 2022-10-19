@@ -2,22 +2,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class MaximalFlow:
-    def __init__(self, vertices, capacity):
+    def __init__(self, vertices, capacity, name=None, save_fig=False):
         self.vertices = {key:np.asarray(value) for key, value in vertices.items()}
         self.residuals = capacity.copy()
         self.capacity = capacity.copy()
         self.flow = {key:0 for key in capacity.keys()}
+        self.name = name
+        self.save_fig = save_fig
         self.TEXT_OFFSET = 0.035
         self.FIG_SIZE = (20, 7)
         self.ax = None
     
     # ------------------------FINDING MAXIMAL FLOW------------------------
-    def find_maximal_flow(self, draw_results=True, show_intermediate=False):
-        if show_intermediate: self.draw_figure(flow_title='Flow network', residual_title='Residual network')
+    def find_maximal_flow(self, draw_results=True, draw_intermediate=False):
+        i = 0
+        if draw_intermediate: self.draw_figure(flow_title='Flow network', residual_title='Residual network', i=i)
         while self.find_st_path() is not None:
             self.update_flows(self.find_st_path())
-            if show_intermediate: self.draw_figure()
-        if draw_results and not show_intermediate: self.draw_figure(flow_title='Flow network', residual_title='Residual network')
+            i += 1
+            if draw_intermediate: self.draw_figure(i=i)
+        if draw_results and not draw_intermediate: self.draw_figure(flow_title='Flow network', residual_title='Residual network')
     
     def update_flows(self, path):
         f = min([self.residuals[(a, b)] for a, b in zip(path[:-1], path[1:])])
@@ -46,6 +50,7 @@ class MaximalFlow:
         return path
     
     # ------------------------FINDING MINIMAL CUT------------------------
+    # Should be called after find_maximal_flow() has been called
     def get_minimal_cut(self):
         A = self.get_vertices_from('s', {'s'})
         B = set(self.vertices.keys()).difference(A)
@@ -63,13 +68,14 @@ class MaximalFlow:
         return sum([self.capacity[(a, b)] for a in A for b in B if (a, b) in set(self.capacity.keys())])
     
     # ------------------------DRAWING FIGURES------------------------
-    def draw_figure(self, flow_title=None, residual_title=None):
+    def draw_figure(self, flow_title=None, residual_title=None, i=''):
         _, axs = plt.subplots(1, 2, figsize=self.FIG_SIZE)
         for ax, title, edges in zip(axs, [flow_title, residual_title], [self.flow, self.residuals]):
             self.ax = ax
             self.ax.axis('off')
             self.ax.set_title(title, size=20)
             self.draw_graph(edges)
+        if self.save_fig: plt.savefig(f'figures/network{i}.pdf' if self.name is None else f'figures/{self.name}_network{i}.pdf')
         plt.show()
     
     def draw_graph(self, edges):
