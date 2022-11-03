@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 class MaximalFlow:
     def __init__(self, vertices, capacity, name=None, save_fig=False):
-        self.vertices = {key:np.asarray(value) for key, value in vertices.items()}
+        self.set_vertices(vertices)
         self.residuals = capacity.copy()
         self.capacity = capacity.copy()
         self.flow = {key:0 for key in capacity.keys()}
@@ -12,6 +13,26 @@ class MaximalFlow:
         self.TEXT_OFFSET = 0.035
         self.FIG_SIZE = (20, 7)
         self.ax = None
+    
+    def set_vertices(self, vertices):
+        if type(vertices) == dict:
+            self.vertices = {key:np.asarray(value) for key, value in vertices.items()}
+        elif type(vertices) == list:
+            self.vertices = {key:np.asarray(value) for key, value in self.assign_coordinates(vertices)}
+    
+    def assign_coordinates(self, vertices):
+        x = 0
+        for col in vertices:
+            u, l = (((len(col) - 1)//2)*1.3333, -((len(col) - 1)//2)*1.3333) if len(col) % 2 else (len(col)//2, -len(col)//2)
+            for vertex, y in zip(col, np.linspace(u, l, len(col))):
+                yield vertex, [x, y]
+            x += 1
+    
+    def set_edges(self):
+        raise NotImplementedError()
+    
+    def get_flow(self):
+        return sum([self.flow[(x, y)] for x, y in self.capacity.keys() if x == 's'])
     
     # ------------------------FINDING MAXIMAL FLOW------------------------
     def find_maximal_flow(self, draw_results=True, draw_intermediate=False):
@@ -56,6 +77,7 @@ class MaximalFlow:
         B = set(self.vertices.keys()).difference(A)
         return A, B
     
+    # Get all vertices reachable from given vertex
     def get_vertices_from(self, vertex, acc):
         for a, b in self.residuals:
             if a == vertex and b not in acc:
