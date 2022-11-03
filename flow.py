@@ -5,9 +5,7 @@ import matplotlib.pyplot as plt
 class MaximalFlow:
     def __init__(self, vertices, capacity, name=None, save_fig=False):
         self.set_vertices(vertices)
-        self.residuals = capacity.copy()
-        self.capacity = capacity.copy()
-        self.flow = {key:0 for key in capacity.keys()}
+        self.set_edges(capacity)
         self.name = name
         self.save_fig = save_fig
         self.TEXT_OFFSET = 0.035
@@ -28,8 +26,15 @@ class MaximalFlow:
                 yield vertex, [x, y]
             x += 1
     
-    def set_edges(self):
-        raise NotImplementedError()
+    def set_edges(self, edges):
+        if type(edges) == dict:
+            self.residuals = edges.copy()
+            self.capacity = edges.copy()
+            self.flow = {key:0 for key in edges.keys()}
+        if type(edges) == list:
+            self.residuals = {(a, b):1 for a, b in edges}
+            self.capacity = {(a, b):1 for a, b in edges}
+            self.flow = {(a, b):0 for a, b in edges}
     
     def get_flow(self):
         return sum([self.flow[(x, y)] for x, y in self.capacity.keys() if x == 's'])
